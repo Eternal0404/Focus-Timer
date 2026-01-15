@@ -14,10 +14,11 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Flutter
+        shell: pwsh
         run: |
           $flutterUrl = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.32.7-stable.zip"
-          $zipPath = "$env:TEMP\flutter.zip"
-          $flutterDir = "$env:TEMP\flutter"
+          $zipPath = Join-Path $env:TEMP "flutter.zip"
+          $flutterDir = Join-Path $env:LOCALAPPDATA "Flutter"
           Write-Host "Downloading Flutter..."
           Invoke-WebRequest -Uri $flutterUrl -OutFile $zipPath
           Write-Host "Extracting..."
@@ -25,16 +26,22 @@ jobs:
           Write-Host "Flutter installed at $flutterDir"
 
       - name: Enable Windows desktop
-        run: cmd /c "$env:TEMP\flutter\bin\flutter.bat create --platforms windows ."
-        shell: cmd
+        shell: pwsh
+        run: |
+          $flutterBat = Join-Path $env:LOCALAPPDATA "Flutter\flutter\bin\flutter.bat"
+          & $flutterBat create --platforms windows .
 
       - name: Install dependencies
-        run: cmd /c "$env:TEMP\flutter\bin\flutter.bat pub get"
-        shell: cmd
+        shell: pwsh
+        run: |
+          $flutterBat = Join-Path $env:LOCALAPPDATA "Flutter\flutter\bin\flutter.bat"
+          & $flutterBat pub get
 
       - name: Build Windows executable
-        run: cmd /c "$env:TEMP\flutter\bin\flutter.bat build windows --release"
-        shell: cmd
+        shell: pwsh
+        run: |
+          $flutterBat = Join-Path $env:LOCALAPPDATA "Flutter\flutter\bin\flutter.bat"
+          & $flutterBat build windows --release
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
