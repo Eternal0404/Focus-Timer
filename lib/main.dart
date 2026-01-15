@@ -2,8 +2,6 @@ import 'dart:async';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
-import 'package:system_tray/system_tray.dart';
-import 'package:bitsdojo_window/bitsdojo_window.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -41,14 +39,11 @@ class _FocusTimerAppState extends State<FocusTimerApp> with WindowListener {
   bool _isRunning = false;
   bool _isPaused = false;
   bool _alwaysOnTop = false;
-  final AppWindow _appWindow = AppWindow();
 
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
-    initSystemTray();
-    _appWindow.setAsFrameless();
   }
 
   @override
@@ -56,24 +51,6 @@ class _FocusTimerAppState extends State<FocusTimerApp> with WindowListener {
     _timer?.cancel();
     windowManager.removeListener(this);
     super.dispose();
-  }
-
-  Future<void> initSystemTray() async {
-    final tray = SystemTray();
-    final menu = [
-      MenuItem(label: 'Start Timer', onClicked: (_) => startTimer()),
-      MenuItem(label: 'Pause', onClicked: (_) => pauseTimer()),
-      MenuItem(label: 'Reset', onClicked: (_) => resetTimer()),
-      Menu.separator(),
-      MenuItem(label: 'Exit', onClicked: (_) => windowManager.destroy()),
-    ];
-
-    await tray.initSystemTray(
-      iconPath: 'assets/tray_icon.ico',
-      toolTip: 'Focus Timer',
-    );
-
-    await tray.setContextMenu(menu);
   }
 
   @override
@@ -130,6 +107,14 @@ class _FocusTimerAppState extends State<FocusTimerApp> with WindowListener {
   void playNotificationSound() {
   }
 
+  void minimizeWindow() {
+    windowManager.minimize();
+  }
+
+  void closeWindow() {
+    windowManager.close();
+  }
+
   String get timerText {
     final minutes = _remainingSeconds ~/ 60;
     final seconds = _remainingSeconds % 60;
@@ -175,15 +160,16 @@ class _FocusTimerAppState extends State<FocusTimerApp> with WindowListener {
                 ),
                 child: Column(
                   children: [
-                    WindowTitleBarBox(
-                      child: MoveWindow(
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Container(
-                                height: 40,
-                                alignment: Alignment.center,
-                                child: const Text(
+                    Container(
+                      height: 40,
+                      padding: const EdgeInsets.symmetric(horizontal: 8),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onPanStart: (_) => windowManager.startDragging(),
+                              child: const Center(
+                                child: Text(
                                   'Focus Timer',
                                   style: TextStyle(
                                     fontSize: 14,
@@ -192,22 +178,18 @@ class _FocusTimerAppState extends State<FocusTimerApp> with WindowListener {
                                 ),
                               ),
                             ),
-                            MinimizeWindowButton(
-                              colors: WindowButtonColors(
-                                normal: Colors.transparent,
-                                mouseOver: Colors.white.withOpacity(0.1),
-                                mouseDown: Colors.white.withOpacity(0.2),
-                              ),
-                            ),
-                            CloseWindowButton(
-                              colors: WindowButtonColors(
-                                normal: Colors.transparent,
-                                mouseOver: Colors.red.withOpacity(0.3),
-                                mouseDown: Colors.red.withOpacity(0.4),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.minimize, size: 16),
+                            onPressed: minimizeWindow,
+                            color: Colors.white70,
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.close, size: 18),
+                            onPressed: closeWindow,
+                            color: Colors.white70,
+                          ),
+                        ],
                       ),
                     ),
                     Expanded(
