@@ -15,7 +15,7 @@ jobs:
 
       - name: Setup Flutter
         run: |
-          $flutterUrl = "https://docs.flutter.dev/stable/windows/flutter_windows_3.32.7-stable.zip"
+          $flutterUrl = "https://storage.googleapis.com/flutter_infra_release/releases/stable/windows/flutter_windows_3.32.7-stable.zip"
           $zipPath = "$env:TEMP\flutter.zip"
           $flutterDir = "$env:TEMP\flutter"
           Write-Host "Downloading Flutter..."
