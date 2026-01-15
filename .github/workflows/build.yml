@@ -22,16 +22,19 @@ jobs:
           Invoke-WebRequest -Uri $flutterUrl -OutFile $zipPath
           Write-Host "Extracting..."
           Expand-Archive -Path $zipPath -DestinationPath $flutterDir -Force
-          echo "$flutterDir\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+          Write-Host "Flutter installed at $flutterDir"
 
       - name: Enable Windows desktop
-        run: $env:PATH = "$env:PATH;$env:TEMP\flutter\bin"; flutter create --platforms windows .
+        run: cmd /c "$env:TEMP\flutter\bin\flutter.bat create --platforms windows ."
+        shell: cmd
 
       - name: Install dependencies
-        run: $env:PATH = "$env:PATH;$env:TEMP\flutter\bin"; flutter pub get
+        run: cmd /c "$env:TEMP\flutter\bin\flutter.bat pub get"
+        shell: cmd
 
       - name: Build Windows executable
-        run: $env:PATH = "$env:PATH;$env:TEMP\flutter\bin"; flutter build windows --release
+        run: cmd /c "$env:TEMP\flutter\bin\flutter.bat build windows --release"
+        shell: cmd
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
